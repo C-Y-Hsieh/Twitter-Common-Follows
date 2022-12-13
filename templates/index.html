@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>My Website</title>
+    <link rel="stylesheet" href="./style.css">
+  </head>
+  <body>
+    <main>
+        <h1>Twitter common follow finder</h1>  
+        <form method="post">
+            <span><label for="fname">Username:</label></span>
+            <span><input type="text" id="username" name="username"></span>
+            <span><input type="submit" name="submit" value="Submit"></span>
+          </form>
+
+        {% if username %}
+          {% if error %}
+            <p>User @{{username}} not found. Please try again</p>
+          {% else %}
+            <h2>The followers of {{name}} (@{{username}}) also follow</h2>
+            <ul>
+                Most
+                {% for user in result['first'] %}
+                    <li>
+                        <span>{{user[0]}}  </span>
+                        <span>(@{{user[1]}})</span>
+                    </li>
+                {% endfor %}
+            </ul>
+            <ul>
+              Second
+              {% for user in result['second'] %}
+                  <li>
+                      <span>{{user[0]}}  </span>
+                      <span>(@{{user[1]}})</span>
+                  </li>
+              {% endfor %}
+            </ul>
+            <ul>
+              Third
+              {% for user in result['third'] %}
+                  <li>
+                      <span>{{user[0]}}  </span>
+                      <span>(@{{user[1]}})</span>
+                  </li>
+              {% endfor %}
+            </ul>
+
+            <h2>The sampled follwers of {{name}} (First degree connections)</h2>
+            <p>{{degrees['first']}}</p>
+            <h2>The follwers also follow (Second degree connections)</h2>
+            <p>{{degrees['second']}}</p>
+          {% endif %}
+        {% endif %}
+    </main>
+
+  </body>
+</html>
