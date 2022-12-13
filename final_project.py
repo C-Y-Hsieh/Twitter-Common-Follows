@@ -194,8 +194,8 @@ def build_network(target_username, network):
 
 
 
+
 def find_common_followers(target_username, network):
-    target_username = clean_username(target_username)
     print(f"username: {target_username,}")
     print(f"# of users in the network: {len(network.vertList)}")
     top_dic = {}
@@ -233,17 +233,21 @@ def find_common_followers(target_username, network):
                 most['third'].append((id, top_dic[id]))
 
         # print(small_network.vertList[key].name, small_network.vertList[key].getConnectionIds())
-    # print(f"most = {most}")
+    #print(f"most = {most}")
 
     most_names_dic = {}
     for key in most.keys():
         user_string = ",".join([u[0] for u in most[key]])
         if len(user_string) > 100:
-            most_names_dic[key] = [('more than 100 users', '')]
+            most_names_dic[key] = 'more than 100 users'
         else:
             most_users = twitter_with_cache(user_url, {'ids': user_string})
             most_username = [(i['name'], i['username']) for i in most_users['data']]
-            most_names_dic[key] = most_username
+            most_names_dic[key] = {
+                'number': most[key][0][1]
+            }
+            most_names_dic[key]['user'] = most_username
+    #print(most_names_dic)
     return most_names_dic
 
 def network_degrees(target_username, network):
