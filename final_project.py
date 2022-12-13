@@ -156,9 +156,17 @@ class Graph:
     def __iter__(self):
         return iter(self.vertList.values())
 
+def clean_username(input):
+    return input.strip().replace('@', '')
 
+def find_name_by_username(target_username):
+    target_username = clean_username(target_username)
+    name = twitter_with_cache(user_by_url, {'usernames': target_username})
+    name = name['data'][0]['name']
+    return name
 
 def build_network(target_username, network):
+    target_username = clean_username(target_username)
     target = twitter_with_cache(user_by_url, {'usernames': target_username})
     target_id = target['data'][0]['id']
     target_name = target['data'][0]['name']
@@ -170,7 +178,7 @@ def build_network(target_username, network):
         
         follower_id = user['id']
         following_url = f"https://api.twitter.com/2/users/{follower_id}/following"
-        following = twitter_with_cache(following_url, {'max_results': 100})
+        following = twitter_with_cache(following_url, {})
         if 'errors' not in following.keys(): # some users might lock their account so I don't have permit to see their following
             for f in following['data']:
                 network.addEdge(user['id'], f['id'], user['name'], f['name'], user['username'], f['username'])
@@ -184,36 +192,74 @@ def build_network(target_username, network):
 
 
 
+
+
 def find_common_followers(target_username, network):
+    target_username = clean_username(target_username)
     print(f"username: {target_username,}")
     print(f"# of users in the network: {len(network.vertList)}")
     top_dic = {}
-    most = [('', 0)]
+    most = {
+        'first': [('', 0)],
+        'second': [('', 0)],
+        'third': [('', 0)]
+    }
+    
+    user_id = twitter_with_cache(user_by_url, {'usernames': target_username})
+    user_id = user_id['data'][0]['id']
     for key in network.vertList.keys():
         for id in network.vertList[key].getConnectionIds():
             if id not in top_dic.keys():
                 top_dic[id] = 1
             else:
                 top_dic[id] += 1
-            if id != USER_ID and top_dic[id] > most[0][1]: #exclude the target user
-                most = [(id, top_dic[id])]
-            elif id != USER_ID and top_dic[id] == most[0][1]:
-                most.append((id, top_dic[id]))
+    
+    for id in top_dic.keys():
+        if id != user_id:
+            if top_dic[id] > most['first'][0][1]: #exclude the target user
+                most['third'] = most['second']
+                most['second'] = most['first']
+                most['first'] = [(id, top_dic[id])]
+            elif top_dic[id] == most['first'][0][1]:
+                most['first'].append((id, top_dic[id]))
+            elif top_dic[id] > most['second'][0][1]:
+                most['third'] = most['second']
+                most['second'] = [(id, top_dic[id])]
+            elif top_dic[id] == most['second'][0][1]:
+                most['second'].append((id, top_dic[id]))
+            elif top_dic[id] > most['third'][0][1]:
+                most['third'] = [(id, top_dic[id])]
+            elif top_dic[id] == most['first'][0][1]:
+                most['third'].append((id, top_dic[id]))
 
         # print(small_network.vertList[key].name, small_network.vertList[key].getConnectionIds())
-    print(f"most = {most}")
+    # print(f"most = {most}")
 
-    user_string = ",".join([u[0] for u in most])
-    most_users = twitter_with_cache(user_url, {'ids': user_string})
-    #user = twitter_with_cache(user_url, {'ids': [most[0]]})
-    #print(f"most_users = {most_users}")
+    most_names_dic = {}
+    for key in most.keys():
+        user_string = ",".join([u[0] for u in most[key]])
+        if len(user_string) > 100:
+            most_names_dic[key] = [('more than 100 users', '')]
+        else:
+            most_users = twitter_with_cache(user_url, {'ids': user_string})
+            most_username = [(i['name'], i['username']) for i in most_users['data']]
+            most_names_dic[key] = most_username
+    return most_names_dic
 
-    most_username = [i['name'] for i in most_users['data']]
-    print(most_username)
+def network_degrees(target_username, network):
+    target_username = clean_username(target_username)
+    id = twitter_with_cache(user_by_url, {'usernames': target_username})['data'][0]['id']
+    degree_of_separation = {
+        'first': [],
+        'second': [],
+    }
+    for key in network.vertList.keys():
+        if id in network.vertList[key].getConnectionIds():
+            degree_of_separation['first'].append(network.vertList[key].name)
+        elif key != id:
+            degree_of_separation['second'].append(network.vertList[key].name)
 
-    #print(f"\n {top_dic}")
-
-
+    return degree_of_separation
 
 def main():
     # Test
