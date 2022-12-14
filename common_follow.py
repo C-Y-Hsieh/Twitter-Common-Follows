@@ -12,6 +12,30 @@ def index():
     both_tweet = []
     cached_list = {"umsi", "umich", "umichfootball"}
 
+    def combine_both_tweet(result):
+        '''
+        Loop through all top common follow users and find tweets that mention both of them.
+
+        Parameters
+        ----------
+        result: dic
+            The dictionary contains the top 3 popular users that followers also follow, and the numbers that how many people in the network follow them
+
+        Returns
+        ----------
+        both_tweet: list
+            A list contains tweeets that mention both usernames (strings)
+        '''
+        both_tweet = []
+        for key in result.keys():
+                for i in result[key]['user']:
+                    try:
+                        both_tweet += both_mentioned_tweet(i[1], username)
+                    except:
+                        pass
+        return both_tweet
+
+
     if request.method =='POST' and request.values['submit']=='Submit':
         username = request.values['username']
         username = clean_username(username)
@@ -26,6 +50,7 @@ def index():
                 result = find_common_followers(username, network)
                 degrees = network_degrees(username, network)
                 num_sampled_followers = len(degrees['first'])
+                both_tweet = combine_both_tweet(result)
             else:
                 try:
                     network = build_network(username, network)
@@ -35,12 +60,7 @@ def index():
                     result = find_common_followers(username, network)
                     degrees = network_degrees(username, network)
                     num_sampled_followers = len(degrees['first'])
-            for key in result.keys():
-                for i in result[key]['user']:
-                    try:
-                        both_tweet += both_mentioned_tweet(i[1], username)
-                    except:
-                        pass
+                    both_tweet = combine_both_tweet(result)
 
 
     return render_template('index.html', username=username, name=name, result=result, degrees=degrees, error=error, num_sampled_followers=num_sampled_followers, both_tweet=both_tweet)
