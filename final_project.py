@@ -12,6 +12,7 @@ following_url = f"https://api.twitter.com/2/users/{USER_ID}/following"
 user_url = "https://api.twitter.com/2/users"
 user_by_url = user_url + '/by'
 search_url = "https://api.twitter.com/2/tweets/search/recent"
+tweet_url = "https://twitter.com/anyuser/status"
 
 def bearer_oauth(r):
     """

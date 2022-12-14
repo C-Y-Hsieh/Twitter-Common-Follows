@@ -82,7 +82,10 @@
             <h2>Tweets that mention @{{username}} for and one of the above users</h2>
             <div class="tweet-container">
               {% for tweet in both_tweet%}
-                <div class="tweet-card">{{tweet['text']}}</div>
+                <div class="tweet-card">
+                  <p>{{tweet['text']}}</p>
+                  <a href="{{tweet_url + '/' + tweet['id']}}" target="_blank">See tweet</a>
+                </div>
               {% endfor %}
             </div>
 

@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request
-from final_project import Graph, build_network, find_common_followers, find_name_by_username, network_degrees, clean_username, both_mentioned_tweet
+from final_project import Graph, build_network, find_common_followers, find_name_by_username, network_degrees, clean_username, both_mentioned_tweet, tweet_url
 app = Flask(__name__)
 @app.route('/', methods=['POST','GET'])
 def index():     
@@ -10,7 +10,7 @@ def index():
     error = False
     num_sampled_followers = 0
     both_tweet = []
-    cached_list = {"umsi", "umich", "umichfootball"}
+    cached_list = {"umsi", "umich", "umichfootball", "rbw_mamamoo"}
 
     def combine_both_tweet(result):
         '''
@@ -63,7 +63,7 @@ def index():
                     both_tweet = combine_both_tweet(result)
 
 
-    return render_template('index.html', username=username, name=name, result=result, degrees=degrees, error=error, num_sampled_followers=num_sampled_followers, both_tweet=both_tweet)
+    return render_template('index.html', username=username, name=name, result=result, degrees=degrees, error=error, num_sampled_followers=num_sampled_followers, both_tweet=both_tweet, tweet_url=tweet_url)
 if __name__ == '__main__':  
     print('starting Flask app', app.name)  
     app.run(debug=True)
