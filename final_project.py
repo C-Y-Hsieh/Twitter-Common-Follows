@@ -78,6 +78,19 @@ def construct_unique_key(baseurl, params):
     return unique_key
 
 def twitter_with_cache(baseurl, params):
+    ''' Get data from cache, If no cache, then get data from the API.
+
+    Parameters
+    ----------
+    baseurl: string
+        the base endpoint of the API
+    params: dic
+        the parameters to query
+
+    Returns
+    -------
+    The opened cache
+    '''
     unique_key = construct_unique_key(baseurl, params)
     if unique_key in CACHE:
         return CACHE[unique_key]
@@ -158,15 +171,58 @@ class Graph:
         return iter(self.vertList.values())
 
 def clean_username(input):
+    '''
+    Remove @ and space of user input.
+
+    Parameters
+    ----------
+    input: str
+        The Twitter username that the user want to search for
+    
+    Returns
+    ----------
+    str
+        Cleaned data of the username
+    '''
     return input.strip().replace('@', '')
 
 def find_name_by_username(target_username):
+    '''
+    Find the user's display name on Twitter
+
+    Parameters
+    ----------
+    target_username: str
+        The Twitter username that the user want to search for
+    
+    Returns
+    ----------
+    name: str
+        The display name of the username
+    '''
     target_username = clean_username(target_username)
     name = twitter_with_cache(user_by_url, {'usernames': target_username})
     name = name['data'][0]['name']
     return name
 
 def build_network(target_username, network, number=14):
+    '''
+    Build a network based on the given user, the user's followers, and the followers' followings.
+
+    Parameters
+    ----------
+    target_username: str
+        A Twitter username
+    network: Graph
+        A empty Graph instance
+    number:
+        The number of sampled followers
+
+    Returns
+    ----------
+    network: Graph
+        The network contains the target user, the user's followers, and the followers' followings.
+    '''
     target_username = clean_username(target_username)
     target = twitter_with_cache(user_by_url, {'usernames': target_username})
     target_id = target['data'][0]['id']
@@ -192,6 +248,26 @@ def build_network(target_username, network, number=14):
 
 
 def find_common_followers(target_username, network):
+    '''
+    Find top3 tier users whom the target user's followers also follow.
+    For example, Umich (target user)'s followers also follow Michigan Athletics, Elon Musk, etc.
+    
+    Parameters
+    ----------
+    target_username: str
+        A Twitter username
+    network: Graph
+        The network contains the target user, the user's followers, and the followers' followings.
+
+    Returns
+    ----------
+    most_names_dic: dic
+        The dictionary contains the top 3 popular users that followers also follow, and the numbers that how many people in the network follow them
+        e.g.
+        {'first': {'number': 5,'user': [('Michigan Athletics 〽️', 'UMichAthletics'),('Elon Musk', 'elonmusk')]},
+        'second': {'number': 4, 'user': [('Aidan Hutchinson', 'aidanhutch97'),("Michigan Men's Basketball", 'umichbball')]},
+        'third': {'number': 3, 'user': [('#2⃣BeSavage', 'blake_corum')]}}
+    '''
     print(f"username: {target_username,}")
     print(f"# of users in the network: {len(network.vertList)}")
     top_dic = {}
@@ -244,6 +320,23 @@ def find_common_followers(target_username, network):
     return most_names_dic
 
 def network_degrees(target_username, network):
+    '''
+    Categorize users in the network into different degrees. The center is the target user.
+
+    Parameters
+    ----------
+    target_username: str
+        The center (target) user used to build the network
+    network: Graph
+        The network contains the target user, the user's followers, and the followers' followings.
+
+    Returns
+    ----------
+    degree_of_separation: dic
+        A dictionary records the first and second degrees of users.
+        The first degree is the follower of the target user.
+        The second degree is the followings of the followers
+    '''
     target_username = clean_username(target_username)
     id = twitter_with_cache(user_by_url, {'usernames': target_username})['data'][0]['id']
     degree_of_separation = {
@@ -259,6 +352,22 @@ def network_degrees(target_username, network):
     return degree_of_separation
 
 def both_mentioned_tweet(string1, string2):
+    '''
+    Find tweets that contain both usernames (strings).
+
+    Parameters
+    ----------
+    string1: str
+        A username (string)
+    string2: Graph
+        Another username (string)
+
+    Returns
+    ----------
+    tweets: list
+        A list contains tweeets that mention both usernames (strings)
+    '''
+    # Don't want to show too much data so only take the first 3 tweets
     tweets = twitter_with_cache(search_url, {'query': f"{string1} {string2}",'max_results': 10})
     tweets = tweets['data'][:3]
     # for t in tweets:
