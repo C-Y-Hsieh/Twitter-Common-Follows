@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request
-from final_project import Graph, build_network, find_common_followers, find_name_by_username, network_degrees, clean_username
+from final_project import Graph, build_network, find_common_followers, find_name_by_username, network_degrees, clean_username, both_mentioned_tweet
 app = Flask(__name__)
 @app.route('/', methods=['POST','GET'])
 def index():     
@@ -9,24 +9,41 @@ def index():
     degrees = {}
     error = False
     num_sampled_followers = 0
+    both_tweet = []
+    cached_list = {"umsi", "umich", "umichfootball"}
+
     if request.method =='POST' and request.values['submit']=='Submit':
         username = request.values['username']
         username = clean_username(username)
         try:
             name = find_name_by_username(username)
         except:
-            error = True
+            error = 'no_user'
         else:
-            #name = find_name_by_username(username)
-            test_network2 = Graph()
-            network2 = build_network(username, test_network2)
-            result = find_common_followers(username, network2)
-            degrees = network_degrees(username, network2)
-            num_sampled_followers = len(degrees['first'])
-    
+            network = Graph()
+            if username.lower() in cached_list:
+                network = build_network(username, network, 30)
+                result = find_common_followers(username, network)
+                degrees = network_degrees(username, network)
+                num_sampled_followers = len(degrees['first'])
+            else:
+                try:
+                    network = build_network(username, network)
+                except:
+                    error = '429'
+                else:
+                    result = find_common_followers(username, network)
+                    degrees = network_degrees(username, network)
+                    num_sampled_followers = len(degrees['first'])
+            for key in result.keys():
+                for i in result[key]['user']:
+                    try:
+                        both_tweet += both_mentioned_tweet(i[1], username)
+                    except:
+                        pass
 
 
-    return render_template('index.html', username=username, name=name, result=result, degrees=degrees, error=error, num_sampled_followers=num_sampled_followers)
+    return render_template('index.html', username=username, name=name, result=result, degrees=degrees, error=error, num_sampled_followers=num_sampled_followers, both_tweet=both_tweet)
 if __name__ == '__main__':  
     print('starting Flask app', app.name)  
     app.run(debug=True)

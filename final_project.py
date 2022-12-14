@@ -11,6 +11,7 @@ follower_url = f"https://api.twitter.com/2/users/{USER_ID}/followers"
 following_url = f"https://api.twitter.com/2/users/{USER_ID}/following"
 user_url = "https://api.twitter.com/2/users"
 user_by_url = user_url + '/by'
+search_url = "https://api.twitter.com/2/tweets/search/recent"
 
 def bearer_oauth(r):
     """
@@ -165,14 +166,14 @@ def find_name_by_username(target_username):
     name = name['data'][0]['name']
     return name
 
-def build_network(target_username, network):
+def build_network(target_username, network, number=14):
     target_username = clean_username(target_username)
     target = twitter_with_cache(user_by_url, {'usernames': target_username})
     target_id = target['data'][0]['id']
     target_name = target['data'][0]['name']
     follower_url = f"https://api.twitter.com/2/users/{target_id}/followers"
 
-    followers = twitter_with_cache(follower_url, {'max_results': 14})
+    followers = twitter_with_cache(follower_url, {'max_results': number})
     for user in followers['data']:
         network.addEdge(user['id'], target_id, user['name'], target_name, user['username'], target_username)
         
@@ -182,12 +183,7 @@ def build_network(target_username, network):
         if 'errors' not in following.keys(): # some users might lock their account so I don't have permit to see their following
             for f in following['data']:
                 network.addEdge(user['id'], f['id'], user['name'], f['name'], user['username'], f['username'])
-    # print(small_network.getVertices())
 
-    # for key in test_30_network.vertList.keys():
-    #     print(test_30_network.vertList[key].name, test_30_network.vertList[key].getConnectionIds())
-        # print(small_network.vertList[key].name, small_network.vertList[key].username)
-    
     return network
 
 
@@ -232,15 +228,12 @@ def find_common_followers(target_username, network):
             elif top_dic[id] == most['first'][0][1]:
                 most['third'].append((id, top_dic[id]))
 
-        # print(small_network.vertList[key].name, small_network.vertList[key].getConnectionIds())
-    #print(f"most = {most}")
-
     most_names_dic = {}
     for key in most.keys():
-        user_string = ",".join([u[0] for u in most[key]])
-        if len(user_string) > 100:
+        if len(most[key]) > 100:
             most_names_dic[key] = 'more than 100 users'
         else:
+            user_string = ",".join([u[0] for u in most[key]])
             most_users = twitter_with_cache(user_url, {'ids': user_string})
             most_username = [(i['name'], i['username']) for i in most_users['data']]
             most_names_dic[key] = {
@@ -265,12 +258,20 @@ def network_degrees(target_username, network):
 
     return degree_of_separation
 
-def main():
-    # Test
-    test_network = Graph()
-    username = 'official_ONEWE'
-    network1 = build_network(username, test_network)
-    find_common_followers(username, network1)
+def both_mentioned_tweet(string1, string2):
+    tweets = twitter_with_cache(search_url, {'query': f"{string1} {string2}",'max_results': 10})
+    tweets = tweets['data'][:3]
+    # for t in tweets:
+    #     print('====')
+    #     print(t['text'])
+    return tweets
 
-if __name__ == "__main__":
-    main()
+# def main():
+#     # Test
+#     test_network = Graph()
+#     username = 'official_ONEWE'
+#     network1 = build_network(username, test_network)
+#     find_common_followers(username, network1)
+
+# if __name__ == "__main__":
+#     main()

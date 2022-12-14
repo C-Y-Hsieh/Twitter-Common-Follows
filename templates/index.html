@@ -2,69 +2,94 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8">
-    <title>My Website</title>
-    <link rel="stylesheet" href="./style.css">
+    <title>Twitter common follow</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css')}}">
   </head>
   <body>
     <main>
-        <h1>Twitter common follow finder</h1>  
+        <h1>Twitter common follow finder</h1>
+        <div id="intro">
+          <p>Please enter a Twitter username, the program will sample some of the user's followers and tell you whom these followers also follow</p>
+          <p>Due to the API request limitation, the program can only sample 14 followers. You can also try the user in the cache list. The program will sample 30 rather than 14 followers for users in the list.</p>
+          <p>Due to the limitation again, the program only allow a new search per 15 minutes. You can try users in the cache list without a time limit.</p>
+        </div>
+        <div id="cache">
+          <p>Cache list: umich, umsi, umichfootball</p>
+        </div>
         <form method="post">
             <span><label for="fname">Username:</label></span>
             <span><input type="text" id="username" name="username"></span>
             <span><input type="submit" name="submit" value="Submit"></span>
-          </form>
+        </form>
+        <p>It might take a couple of seconds to run</p>
 
         {% if username %}
-          {% if error %}
+          {% if error=='no_user' %}
             <p>User @{{username}} not found. Please try again</p>
+          {% elif error=='429' %}
+            <p>Twitter API only allow the user to request 15 follow-related data per 15 minutes (one new search in this program).</p>
+            <p>Please wait or try cached user.</p>
           {% else %}
             <h2>The followers of {{name}} (@{{username}}) also follow</h2>
-            <ul>
-              Most
-              {% if result['first']['number']%}
-              ({{result['first']['number']}}/{{num_sampled_followers}} followers follow)
+            <h3>Most</h3>
+            {% if result['first']['number']%}
+              <p id="follow-number">({{result['first']['number']}}/{{num_sampled_followers}} followers follow)</p>
+              <ul>
                 {% for user in result['first']['user'] %}
                 <li>
                     <span>{{user[0]}}  </span>
                     <span>(@{{user[1]}})</span>
                 </li>
                 {% endfor %}
-              {% else %}
+              </ul>
+            {% else %}
                 <li>more than 100 users...</li>
-              {% endif %}
-            </ul>
-            <ul>
-              Second
-              {% if result['second']['number']%}
-              ({{result['second']['number']}}/{{num_sampled_followers}} followers follow)
+              </ul>
+            {% endif %}
+            
+            <h3>Second</h3>
+            {% if result['second']['number']%}
+              <p id="follow-number">({{result['second']['number']}}/{{num_sampled_followers}} followers follow)</p>
+              <ul>
                 {% for user in result['second']['user'] %}
                 <li>
                     <span>{{user[0]}}  </span>
                     <span>(@{{user[1]}})</span>
                 </li>
                 {% endfor %}
-              {% else %}
+              </ul>
+            {% else %}
                 <li>more than 100 users...</li>
-              {% endif %}
-            </ul>
-            <ul>
-              Third
-              {% if result['third']['number']%}
-              ({{result['third']['number']}}/{{num_sampled_followers}} followers follow)
+              </ul>
+            {% endif %}
+
+            <h3>Third</h3>
+            {% if result['third']['number']%}
+              <p id="follow-number">({{result['third']['number']}}/{{num_sampled_followers}} followers follow)</p>
+              <ul>
                 {% for user in result['third']['user'] %}
                 <li>
                     <span>{{user[0]}}  </span>
                     <span>(@{{user[1]}})</span>
                 </li>
                 {% endfor %}
-              {% else %}
+              </ul>
+            {% else %}
                 <li>more than 100 users...</li>
-              {% endif %}
-            </ul>
+              </ul>
+            {% endif %}
 
-            <h2>The sampled follwers of {{name}} (First degree connections)</h2>
+            <h2>Tweets that mention @{{username}} for and one of the above users</h2>
+            <div class="tweet-container">
+              {% for tweet in both_tweet%}
+                <div class="tweet-card">{{tweet['text']}}</div>
+              {% endfor %}
+            </div>
+
+            <h2>Network detail</h2>
+            <h3>The sampled follwers of {{name}} (First degree connections)</h3>
             <p>{{degrees['first']}}</p>
-            <h2>The follwers also follow (Second degree connections)</h2>
+            <h3>The follwers also follow (Second degree connections)</h3>
             <p>{{degrees['second']}}</p>
           {% endif %}
         {% endif %}
