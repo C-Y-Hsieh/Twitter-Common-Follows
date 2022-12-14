@@ -19,14 +19,14 @@ body{
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
-    align-items: flex-start;
+    align-items: stretch;
     padding: 0px;
     gap: 32px;
 }
 
 .tweet-card{
     width: 245px;
-    height: 140px;
+    
 
     background: #FFFFFF;
     box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.15);
