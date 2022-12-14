@@ -14,7 +14,11 @@
           <p>Due to the limitation again, the program only allow a new search per 15 minutes. You can try users in the cache list without a time limit.</p>
         </div>
         <div id="cache">
-          <p>Cache list: umich, umsi, umichfootball</p>
+          <p>Cache list: 
+            {% for user in cached_list %}
+              <span>{{user}}, </span>
+            {% endfor %}
+          </p>
         </div>
         <form method="post">
             <span><label for="fname">Username:</label></span>
