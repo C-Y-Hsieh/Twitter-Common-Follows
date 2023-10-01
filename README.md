@@ -20,12 +20,16 @@ For example, School of Information's followers also follow Elon Musk, President 
 7. To end the program, pleasr press CTRL+C on your terminal
 
 ## How does the program work behind the scene
-1. User enter a user's username (the target user)
+1. User enters a user's username (the target user)
 2. The program finds the user's id
-3. Use the id to get the follower list
+3. Use the ID to get the follower list
 4. Create a `Graph` instance as a network
 5. Connect the user to his/her followers (add edges in the network)
 6. Find the followings of the followers
 7. Connect the followers to their followings (add edges in the network)
 8. Find and show the top 3 tier users who have the most followers in the network
 9. Find and show tweets that mention both the target user and common-followed users
+
+## Demo video
+https://drive.google.com/file/d/1WWyNaxmHs7ctbCkQf43Dhfmn61Z4lgWB/view?usp=sharing
+
