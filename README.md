@@ -3,6 +3,7 @@
 Enter a username (e.g. umsi) to search for the user (e.g. School of Information), and the program looks through School of Information's followers' following lists and shows whom the followers also follow. 
 
 For example, School of Information's followers also follow Elon Musk, President Biden, CNN, etc. 
+* Due to the pricing change of Twitter (X), the API might not work
 
 ## How to run the program
 1. Download/clone this repo
